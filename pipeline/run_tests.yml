@@ -1,0 +1,59 @@
+resource_types:
+  - name: gcs-resource
+    type: docker-image
+    source:
+      repository: frodenas/gcs-resource
+
+resources:
+  - name: repo
+    type: git
+    source:
+      uri: git@github.com:fshuva/pipeline.git
+      branch: main
+
+  - name: every-hour
+    type: time
+    icon: clock-outline
+    source:
+      location: America/Vancouver
+
+jobs:
+  - name: run-tests
+    plan:
+      #   - get: gcs-file
+      - get: every-hour
+      - get: repo
+
+      - task: set-env
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: node
+          inputs:
+            - name: repo
+          run:
+            path: sh
+            args:
+              - -c
+              - |
+                set -eux
+                whoami
+
+      - task: run-node-tests
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: node
+          inputs:
+            - name: repo
+          run:
+            path: sh
+            args:
+              - -c
+              - |
+                set -eux
+                ls -l

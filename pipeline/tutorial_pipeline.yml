@@ -1,0 +1,22 @@
+resources:
+  - name: repo
+    type: git
+    source:
+      uri: git@github.com:fshuva/pipeline.git
+      branch: main
+
+jobs:
+  - name: set-self
+    plan:
+      - get: repo
+      - set_pipeline: self
+        file: repo/tutorial_pipeline.yml
+
+  - name: wait-for-gcs-update
+    plan:
+      - get: repo
+      - across:
+          - var: dynamic
+            values: ["test_1", " test_2"]
+        set_pipeline: ((.:dynamic))
+        file: run_tests.yml
